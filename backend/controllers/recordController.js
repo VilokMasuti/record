@@ -5,11 +5,17 @@ export const getAllRecords = async (req, res) => {
     const records = await Record.find()
     res.json(records)
   } catch (error) {
+    console.error(error) // Logging error details
     res.status(500).json({ message: error.message })
   }
 }
 
 export const createRecord = async (req, res) => {
+  // Basic validation
+  if (!req.body.name || !req.body.email) {
+    return res.status(400).json({ message: 'Name and email are required' })
+  }
+
   const record = new Record({
     name: req.body.name,
     email: req.body.email,
@@ -19,11 +25,17 @@ export const createRecord = async (req, res) => {
     const newRecord = await record.save()
     res.status(201).json(newRecord)
   } catch (error) {
+    console.error(error)
     res.status(400).json({ message: error.message })
   }
 }
 
 export const updateRecord = async (req, res) => {
+  // Basic validation
+  if (!req.body.name || !req.body.email) {
+    return res.status(400).json({ message: 'Name and email are required' })
+  }
+
   try {
     const updatedRecord = await Record.findByIdAndUpdate(
       req.params.id,
@@ -32,15 +44,20 @@ export const updateRecord = async (req, res) => {
     )
     res.json(updatedRecord)
   } catch (error) {
+    console.error(error)
     res.status(400).json({ message: error.message })
   }
 }
 
 export const deleteRecord = async (req, res) => {
   try {
-    await Record.findByIdAndDelete(req.params.id)
-    res.json({ message: 'Record deleted successfully' })
+    const deletedRecord = await Record.findByIdAndDelete(req.params.id)
+    if (!deletedRecord) {
+      return res.status(404).json({ message: 'Record not found' })
+    }
+    res.status(204).send() // Successful deletion without a response body
   } catch (error) {
+    console.error(error)
     res.status(500).json({ message: error.message })
   }
 }
